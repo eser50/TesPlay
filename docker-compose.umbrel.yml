@@ -1,0 +1,46 @@
+# Portainer stack for umbrelOS. No Caddy: HTTPS comes from `tailscale serve`
+# (see DEPLOY-UMBREL.md). Build context is this repository.
+#
+# Stack variables to set in Portainer (Environment variables):
+#   APP_ORIGIN       https://<your-umbrel>.<your-tailnet>.ts.net   (required)
+#   SESSION_SECRET   output of: openssl rand -hex 32                (required)
+#   JELLYFIN_URL     http://192.168.1.246:8096                      (required)
+#   YOUTUBE_API_KEY  key restricted to YouTube Data API v3          (required)
+#   PLAYER_PORT      host port, default 3100
+#   TRUST_PROXY      address of whatever forwards to the player; default is the
+#                    Docker bridge gateway used by the private network below
+services:
+  freestuffcrazy-player:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${PLAYER_PORT:-3100}:3000"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      DATA_DIR: /app/data
+      APP_ORIGIN: ${APP_ORIGIN:?Set APP_ORIGIN to your https tailnet address}
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET}
+      JELLYFIN_URL: ${JELLYFIN_URL:?Set JELLYFIN_URL}
+      JELLYFIN_NAME: Umbrel Jellyfin
+      TRUST_PROXY: ${TRUST_PROXY:-172.30.242.1}
+      FREESTUFFCRAZY_PLUGIN_MODULES: /app/plugins/youtube-plugin.js
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:?Set YOUTUBE_API_KEY}
+    volumes:
+      - freestuffcrazy-player-data:/app/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - private
+
+networks:
+  private:
+    ipam:
+      config:
+        - subnet: 172.30.242.0/24
+
+volumes:
+  freestuffcrazy-player-data:
