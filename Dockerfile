@@ -14,6 +14,7 @@ COPY config.example.json ./config.json
 COPY LICENSE THIRD-PARTY-NOTICES.md ./
 COPY licenses ./licenses
 COPY public ./public
+COPY plugins ./plugins
 
 # Mount external plugins at runtime and configure their paths explicitly.
 
