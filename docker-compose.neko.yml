@@ -1,0 +1,34 @@
+# Remote browser for umbrelOS (Portainer stack, separate from the player).
+# A real Google Chrome (Widevine included, amd64) runs in this container; you
+# sign in to YouTube Premium, Netflix, Disney+ ... once and the profile is kept
+# in a volume. Clients just receive a video stream and send taps/keys back.
+#
+# Stack variables to set in Portainer:
+#   NEKO_USER_PASSWORD   password viewers use (required)
+#   NEKO_ADMIN_PASSWORD  password for the admin account (required, different)
+#   NEKO_PUBLIC_IP       address clients can reach for the stream. For testing
+#                        over Tailscale use the Umbrel's Tailscale IP.
+#   NEKO_PORT            web port, default 8090
+#   NEKO_SCREEN          default 1280x720@30
+services:
+  neko:
+    image: ghcr.io/m1k1o/neko/google-chrome:latest
+    restart: unless-stopped
+    shm_size: 2gb
+    ports:
+      - "${NEKO_PORT:-8090}:8080"
+      - "59000:59000/udp"
+      - "59000:59000/tcp"
+    environment:
+      NEKO_DESKTOP_SCREEN: ${NEKO_SCREEN:-1280x720@30}
+      NEKO_MEMBER_PROVIDER: multiuser
+      NEKO_MEMBER_MULTIUSER_USER_PASSWORD: ${NEKO_USER_PASSWORD:?Set NEKO_USER_PASSWORD}
+      NEKO_MEMBER_MULTIUSER_ADMIN_PASSWORD: ${NEKO_ADMIN_PASSWORD:?Set NEKO_ADMIN_PASSWORD}
+      NEKO_WEBRTC_UDPMUX: "59000"
+      NEKO_WEBRTC_TCPMUX: "59000"
+      NEKO_WEBRTC_NAT1TO1: ${NEKO_PUBLIC_IP:?Set NEKO_PUBLIC_IP}
+    volumes:
+      - neko-chrome-profile:/home/neko/.config/google-chrome
+
+volumes:
+  neko-chrome-profile:
