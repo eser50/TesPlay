@@ -62,3 +62,9 @@ test('routes validate input and hide upstream errors', async () => {
   assert.equal(quota.status, 429);
   assert.ok(!JSON.stringify(quota.body).includes('private detail'));
 });
+
+test('embed host defaults to youtube-nocookie and accepts only www.youtube.com as the alternative', () => {
+  assert.equal(setup().plugin.embedHost, 'www.youtube-nocookie.com');
+  assert.equal(setup({ env: { YOUTUBE_EMBED_HOST: 'www.youtube.com' } }).plugin.embedHost, 'www.youtube.com');
+  assert.equal(setup({ env: { YOUTUBE_EMBED_HOST: 'evil.example' } }).plugin.embedHost, 'www.youtube-nocookie.com');
+});

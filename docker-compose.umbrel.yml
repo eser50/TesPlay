@@ -7,6 +7,8 @@
 #   JELLYFIN_URL     http://192.168.1.246:8096                      (required)
 #   YOUTUBE_API_KEY  key restricted to YouTube Data API v3          (required)
 #   PLAYER_PORT      host port, default 3100
+#   YOUTUBE_EMBED_HOST  set to www.youtube.com so the embed can use your YouTube
+#                    login (Premium); default www.youtube-nocookie.com ignores it
 #   TRUST_PROXY      address of whatever forwards to the player; default is the
 #                    Docker bridge gateway used by the private network below
 services:
@@ -27,6 +29,7 @@ services:
       TRUST_PROXY: ${TRUST_PROXY:-172.30.242.1}
       FREESTUFFCRAZY_PLUGIN_MODULES: /app/plugins/youtube-plugin.js
       YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:?Set YOUTUBE_API_KEY}
+      YOUTUBE_EMBED_HOST: ${YOUTUBE_EMBED_HOST:-www.youtube-nocookie.com}
     volumes:
       - freestuffcrazy-player-data:/app/data
     security_opt:

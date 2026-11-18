@@ -27,6 +27,9 @@ export function createYoutubePlugin({ env = process.env, fetchImpl = globalThis.
   const key = env.YOUTUBE_API_KEY?.trim();
   if (!key) return { enabled: false };
   const region = /^[A-Za-z]{2}$/.test(env.YOUTUBE_REGION || '') ? env.YOUTUBE_REGION.toUpperCase() : 'US';
+  // youtube-nocookie ignores your YouTube login; www.youtube.com lets the embed
+  // use it (so Premium can apply). security.js allows the same two hosts only.
+  const embedHost = env.YOUTUBE_EMBED_HOST === 'www.youtube.com' ? 'www.youtube.com' : 'www.youtube-nocookie.com';
   const cache = new Map();
 
   async function call(path, params) {
@@ -56,12 +59,13 @@ export function createYoutubePlugin({ env = process.env, fetchImpl = globalThis.
 
   return {
     enabled: true,
+    embedHost,
     search, trending,
     registerRoutes(app, context) {
       const limit = context.rateLimit({ maximum: 60, windowMs: 60000 });
       const respond = work => async (req, res) => {
         res.set('Cache-Control', 'no-store');
-        try { res.json({ items: await work(req) }); }
+        try { res.json({ items: await work(req), embedHost }); }
         catch (error) { res.status(error.status === 403 ? 429 : 502).json({ error: error.status === 403 ? 'YouTube quota exhausted or key rejected' : 'YouTube is unavailable' }); }
       };
       app.get('/api/youtube/search', limit, (req, res) => {

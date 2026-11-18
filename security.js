@@ -133,7 +133,7 @@ export function directPlexOrigin(value) {
 
 function buildPolicy(hashes, origin = '') {
   const external = origin ? ` ${origin}` : '';
-  return `default-src 'self'; script-src 'self' ${hashes.join(' ')}; style-src 'self' 'unsafe-inline'; img-src 'self' http: https: data:; media-src 'self' blob:${external}; connect-src 'self'${external}; worker-src 'self' blob:; frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'`;
+  return `default-src 'self'; script-src 'self' ${hashes.join(' ')}; style-src 'self' 'unsafe-inline'; img-src 'self' http: https: data:; media-src 'self' blob:${external}; connect-src 'self'${external}; worker-src 'self' blob:; frame-src https://www.youtube-nocookie.com${process.env.YOUTUBE_EMBED_HOST === 'www.youtube.com' ? ' https://www.youtube.com' : ''}; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'`;
 }
 
 export function securityHeaders(publicDir, { mediaOriginForRequest = () => '' } = {}) {
